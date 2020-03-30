@@ -8,7 +8,7 @@ import numpy as np
 import trainer.config as config
 from trainer.discriminator import Discriminator
 from trainer.generator import Generator
-from trainer.utils.argsparser import parse_args
+from trainer.argsparser import parse_args
 from trainer.utils.calcul_util import pad_image
 from trainer.utils.download import split_bucket, download_images_async
 
@@ -113,14 +113,14 @@ def main(args):
 
             disc_Y = np.zeros(2 * batch_size)
             disc_Y[:batch_size] = 0.9
-            disc_loss = discriminator_model.train(disc_X, disc_Y)
+            desc_loss = discriminator_model.train(disc_X, disc_Y)
 
-            generator_model.update_disc_loss(disc_loss[0])
+            generator_model.update_disc_loss(desc_loss)
             gen_loss = generator_model.train(train_X, train_Y)
 
             if step % 10 == 0:
                 print(f"epoch: {e}, step: {step}")
-                print(f"loss generator: {gen_loss}, loss dirscriminator: {disc_loss}")
+                print(f"loss generator: {gen_loss}, loss dirscriminator: {desc_loss}")
 
         if args.ckpnt:
             print("Saving checkpoint...")

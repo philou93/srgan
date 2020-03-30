@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tester.utils.argsparser import parse_args
+from tester.argsparser import parse_args
 
 from trainer.generator import Generator
 from trainer.utils.calcul_util import downsize_dims_by_factor_no_channel, downsize_dims_by_factor

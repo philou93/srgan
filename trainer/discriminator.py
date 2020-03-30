@@ -1,11 +1,15 @@
 import keras.applications
 from keras import Sequential
-from keras.layers import Conv2D, Flatten, Dense
+from keras.layers import Conv2D, Flatten, Dense, Lambda
 from keras.optimizers import Adam
 from tensorflow.python.lib.io import file_io
+from keras.backend import log as k_log
 
 from trainer.utils.download import split_bucket, download_weight
 
+
+def log_activation(loss):
+    return - k_log(loss)
 
 class Discriminator:
 
@@ -20,20 +24,20 @@ class Discriminator:
 
     def create_model(self):
         base_model = keras.applications.ResNet50V2(input_shape=self.input_dims, include_top=False, pooling=None)
-        model = Sequential([base_model,
-                            Flatten(),
-                            Dense(512, activation="relu"),
-                            Dense(1, activation="sigmoid")])
+        classifier_part = Flatten()(base_model.layers[-1].output)
+        classifier_part = Dense(512, activation="relu")(classifier_part)
+        classifier_part = Dense(1, activation="sigmoid")(classifier_part)
+        model = keras.Model(inputs=[base_model.input], outputs=[classifier_part])
         return model
 
     def compile(self):
         self.model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=0.001), metrics=["acc"])
 
     def forward(self, inputs):
-        return self.model.predict(inputs)
+        return self.model.predict(inputs)[0]
 
     def train(self, X, Y):
-        loss = self.model.train_on_batch(X, Y)
+        loss, _ = self.model.train_on_batch(X, Y)
         return loss
 
     def save(self):

@@ -3,6 +3,7 @@ from keras import Model
 from keras.initializers import VarianceScaling
 from keras.layers import Conv2D, BatchNormalization, Input, Add, ReLU
 from keras.optimizers import Adam
+from keras.backend import log as k_log
 from tensorflow import Variable
 from tensorflow.python.lib.io import file_io
 
