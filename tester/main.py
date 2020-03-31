@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from tester.argsparser import parse_args
 
 from trainer.utils.calcul_util import preprocess_imgs
-from trainer.generator import Generator
+from trainer.models.generator import Generator
 
 hr_input_dims = [200, 200, 3]
 
@@ -41,7 +41,7 @@ def show_result(original_img, input_img, output_img, lr_factor=4):
 
 def main(args):
     inputs, originals = get_images(args.images, args.factor)
-    generator = Generator((None,None,3), (None, None, 3), nb_filter_conv1=16)
+    generator = Generator(nb_filter_conv1=16)  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
     generator.load_weights(args.gen_path)
 
     for input_img, original in list(zip(inputs, originals)):

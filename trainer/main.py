@@ -7,8 +7,8 @@ import tensorflow as tf
 
 import trainer.config as config
 from trainer.argsparser import parse_args
-from trainer.discriminator import Discriminator
-from trainer.generator import Generator
+from trainer.models.discriminator import Discriminator
+from trainer.models.generator import Generator
 from trainer.utils.calcul_util import preprocess_imgs
 from trainer.utils.download import split_bucket, download_images_async
 from trainer.utils.gpus import setup_device_use, set_to_memory_growth
@@ -58,6 +58,7 @@ def preprocessing(blobs, lr_factor, extension=None):
     train_y = []
     images = download_images_async(blobs, extension_file=extension)
     for image in images:
+        # C'est important pour le training que toutes les images ait le même shape à l'entré.
         image_input, image_output = preprocess_imgs(image, hr_input_dims, lr_factor, pad=True)
         train_x.append(image_input)
         train_y.append(image_output)
@@ -96,14 +97,11 @@ def main(args):
 
     dataset_iter = image_generator(dataset, batch_size, partial(preprocessing, lr_factor=lr_factor))
 
-    discriminator_model = Discriminator(hr_input_dims,
-                                        batch_size=batch_size, save_path=args.ckpnt_discr)
+    discriminator_model = Discriminator(hr_input_dims, save_path=args.ckpnt_discr)
     if args.weights_discr_path:
         discriminator_model.load_weights(args.weights_discr_path)
 
-    # Puisqu"il n'y a pas de Fully-Connected, le input shape peut varier.
-    generator_model = Generator((None, None, 3), hr_input_dims,
-                                batch_size=batch_size, nb_filter_conv1=16, save_path=args.ckpnt_gen)
+    generator_model = Generator(nb_filter_conv1=16, save_path=args.ckpnt_gen)
     if args.weights_gen_path:
         generator_model.load_weights(args.weights_gen_path)
 

@@ -9,18 +9,11 @@ from tensorflow.python.lib.io import file_io
 from trainer.utils.download import split_bucket, download_weight
 
 
-class Generator:
+class BaseModel:
 
-    def __init__(self, input_dims, output_dims, batch_size=32,
-                 nb_filter_conv1=32, save_path="save/generator"):
-        self.input_dims = input_dims
-        self.output_dims = output_dims
-        self.nb_filer_conv1 = nb_filter_conv1
-        self.batch_size = batch_size
+    def __init__(self, save_path, optimizer):
         self.save_path = save_path
-        self.optimizer = None
-        self.model = self.create_model()
-        self.compile()
+        self.optimizer = optimizer
 
     def create_model(self):
         raise NotImplemented(f"'create_model' function must be implemented")
