@@ -14,12 +14,7 @@ from trainer.utils.download import split_bucket, download_images_async
 from trainer.utils.gpus import setup_device_use, set_to_memory_growth
 from trainer.utils.loss_history import add_loss_to_history, flush_loss_history
 
-lr_factor = 4
-hr_input_dims = [200, 200, 3]
-
-assert hr_input_dims[2] in [3], "hr_input_dims[2] doit etre soit 1 ou 3"
-
-index_img_to_show = [3, 8, 23]  # Hardcoder pour facilite la chose
+hr_input_dims = [200, 200, 3]  # Hardcoder
 
 
 def import_dataset(data_path, extension_file):
@@ -146,6 +141,7 @@ if __name__ == "__main__":
 
     config.set(args)
 
+    # Sur gcloud la variable existe déjà
     if config.location == "local":
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials_gcloud.json"
 
