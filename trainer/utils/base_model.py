@@ -1,45 +1,47 @@
-import keras.applications
-from keras.layers import Flatten, Dense
+import tensorflow as tf
+from keras import Model
+from keras.initializers import VarianceScaling
+from keras.layers import Conv2D, BatchNormalization, Input, Add, ReLU
 from keras.optimizers import Adam
+from tensorflow import Variable
 from tensorflow.python.lib.io import file_io
 
 from trainer.utils.download import split_bucket, download_weight
 
 
-class Discriminator:
+class Generator:
 
-    def __init__(self, input_dims, batch_size=32, nb_rb=4,
-                 save_path="save/discriminator"):
+    def __init__(self, input_dims, output_dims, batch_size=32,
+                 nb_filter_conv1=32, save_path="save/generator"):
         self.input_dims = input_dims
+        self.output_dims = output_dims
+        self.nb_filer_conv1 = nb_filter_conv1
         self.batch_size = batch_size
         self.save_path = save_path
-        self.nb_rb = nb_rb
-        self.optimizer = Adam(learning_rate=0.0005)
+        self.optimizer = None
         self.model = self.create_model()
         self.compile()
 
     def create_model(self):
-        base_model = keras.applications.VGG16(input_shape=self.input_dims, include_top=False, pooling=None)
-        classifier_part = Flatten()(base_model.layers[-1].output)
-        classifier_part = Dense(512, activation="relu")(classifier_part)
-        classifier_part = Dense(1, activation="sigmoid")(classifier_part)
-        model = keras.Model(inputs=[base_model.input], outputs=[classifier_part])
-        return model
+        raise NotImplemented(f"'create_model' function must be implemented")
 
     def compile(self):
-        self.model.compile(loss="binary_crossentropy", optimizer=self.optimizer, metrics=["acc"])
+        raise NotImplemented(f"'compile' function must be implemented")
 
     def forward(self, inputs):
-        return self.model.predict(inputs)[0]
+        return self.model.predict(inputs)
 
     def train(self, X, Y):
-        loss, _ = self.model.train_on_batch(X, Y)
+        loss = self.model.train_on_batch(X, Y)[0]
         return loss
 
     def reset_optimizer(self):
         self.optimizer.decay.assign(0.0)
 
     def save(self):
+        """
+        Fonction pour google cloud storage.
+        """
         if self.save_path.startswith("gs://"):  # on l'enregistre sur google cloud storage
             self.model.save('model.h5')  # on l'enregistre temporairement
             with file_io.FileIO('model.h5', mode='rb') as input_f:
@@ -61,9 +63,5 @@ class Discriminator:
         self.compile()
 
     @classmethod
-    def load(cls, input_dims, batch_size=32, nb_filter_conv1=16,
-             load_path="save/discriminator/model.h5", save_path="save/discriminator"):
-        discr = Discriminator(input_dims, batch_size=batch_size, save_path=save_path)
-        discr = discr.model.load_weights(load_path)
-        discr.compile()
-        return discr
+    def load(*args, wkargs):
+        raise NotImplemented("'load' function must be implemented.")

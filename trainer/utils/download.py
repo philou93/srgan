@@ -21,7 +21,7 @@ async def _download_images_async(work_queue, extension_file, read_flag):
     return dataset
 
 
-def download_images_async(blobs, read_flag=cv2.IMREAD_GRAYSCALE, nb_worker=5, extension_file=None):
+def download_images_async(blobs, read_flag=cv2.IMREAD_COLOR, nb_worker=5, extension_file=None):
     async def task():
         nonlocal blobs, extension_file, read_flag, loop, nb_worker
         work_queue = asyncio.Queue()

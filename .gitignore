@@ -96,3 +96,5 @@ fabric.properties
 **/*.jpg
 **/*.png
 **/*.h5
+
+.idea/**/*

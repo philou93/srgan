@@ -3,7 +3,6 @@ from keras import Model
 from keras.initializers import VarianceScaling
 from keras.layers import Conv2D, BatchNormalization, Input, Add, ReLU
 from keras.optimizers import Adam
-from keras.backend import log as k_log
 from tensorflow import Variable
 from tensorflow.python.lib.io import file_io
 
@@ -19,6 +18,7 @@ class Generator:
         self.nb_filer_conv1 = nb_filter_conv1
         self.batch_size = batch_size
         self.save_path = save_path
+        self.optimizer = Adam(learning_rate=0.0005)
         self.model = self.create_model()
         self.compile()
 
@@ -70,7 +70,7 @@ class Generator:
 
     def compile(self):
         # Todo: changer pour loss sur fm
-        self.model.compile(loss="mse", optimizer=Adam(learning_rate=0.001), metrics=["mse"])
+        self.model.compile(loss="mse", optimizer=self.optimizer, metrics=["mse"])
 
     def update_disc_loss(self, loss):
         loss = loss * 0.001
@@ -80,8 +80,11 @@ class Generator:
         return self.model.predict(inputs)
 
     def train(self, X, Y):
-        loss = self.model.train_on_batch(X, Y)
+        loss = self.model.train_on_batch(X, Y)[0]
         return loss
+
+    def reset_optimizer(self):
+        self.optimizer.decay.assign(0.0)
 
     def save(self):
         """

@@ -2,18 +2,20 @@ import os
 import random
 from functools import partial
 
-import cv2
 import numpy as np
+import tensorflow as tf
 
 import trainer.config as config
+from trainer.argsparser import parse_args
 from trainer.discriminator import Discriminator
 from trainer.generator import Generator
-from trainer.argsparser import parse_args
-from trainer.utils.calcul_util import pad_image
+from trainer.utils.calcul_util import preprocess_imgs
 from trainer.utils.download import split_bucket, download_images_async
+from trainer.utils.gpus import setup_device_use, set_to_memory_growth
+from trainer.utils.loss_history import add_loss_to_history, flush_loss_history
 
 lr_factor = 4
-hr_input_dims = [800, 800, 3]
+hr_input_dims = [200, 200, 3]
 
 assert hr_input_dims[2] in [3], "hr_input_dims[2] doit etre soit 1 ou 3"
 
@@ -44,22 +46,21 @@ def import_dataset(data_path, extension_file):
 
 
 def preprocessing(blobs, lr_factor, extension=None):
-    images = download_images_async(blobs, extension_file=extension)
-    # TODO: il doit bien y avoir une facon de remplacer le Fully-Connected par une Convolution.
-    x, y = hr_input_dims[:2]
+    """
+    On garde en memoire seulement les images quon utilisepour l'époque courrante.
 
+    :param blobs:
+    :param lr_factor:
+    :param extension:
+    :return:
+    """
     train_x = []
     train_y = []
+    images = download_images_async(blobs, extension_file=extension)
     for image in images:
-        padded_image = pad_image(image, (x, y, 3))
-        image_input = cv2.resize(padded_image,
-                                 (int(x / lr_factor), int(y / lr_factor)),
-                                 interpolation=cv2.INTER_CUBIC)
-        image_input = cv2.resize(image_input,
-                                 (x, y),
-                                 interpolation=cv2.INTER_CUBIC)
-        train_x.append(image_input / 255)
-        train_y.append(padded_image / 255)
+        image_input, image_output = preprocess_imgs(image, hr_input_dims, lr_factor, pad=True)
+        train_x.append(image_input)
+        train_y.append(image_output)
 
     return np.array(train_x), np.array(train_y)
 
@@ -70,15 +71,21 @@ def image_generator(dataset, batch_size, ftc_preprocess):
     while True:
         batch_content = dataset[current_index:current_index + batch_size]
         batch_content = ftc_preprocess(batch_content)
-        yield batch_content
+        if len(batch_content[0].shape) != 4 or len(batch_content[1].shape) != 4:
+            print(f"The shape of the dataset is not valid. Got datasets shape of {len(batch_content[0])} and "
+                  f"{len(batch_content[1])} elements, but 4 are needed.")
+        else:
+            yield batch_content
         current_index += batch_size
-        if current_index > len(dataset):
+        if current_index > len(dataset) - batch_size:
             current_index = 0
             random.shuffle(dataset)
 
 
 def main(args):
     global hr_input_dims
+
+    #TODO: il faudrait enregistrer les parametres pour reconstruire le model
 
     epoch = args.epoch
     step_per_epoch = args.step
@@ -102,30 +109,38 @@ def main(args):
 
     print("Training is starting...")
     for e in range(epoch):
+
+        generator_model.reset_optimizer()
+        discriminator_model.reset_optimizer()
+
         for step in range(step_per_epoch):
-
-            print(f"epoch {e}, step {step}...")
-
             train_X, train_Y = next(dataset_iter)
-            img_outputs = generator_model.forward(train_X)
+
+            with tf.device(args.gpus_mapper["generator"]):
+                img_outputs = generator_model.forward(train_X)
 
             disc_X = np.concatenate([train_Y, img_outputs])
 
             disc_Y = np.zeros(2 * batch_size)
-            disc_Y[:batch_size] = 0.9
-            desc_loss = discriminator_model.train(disc_X, disc_Y)
+            disc_Y[:batch_size] = 0.95
 
-            generator_model.update_disc_loss(desc_loss)
-            gen_loss = generator_model.train(train_X, train_Y)
+            with tf.device(args.gpus_mapper["descriminator"]):
+                disc_loss = discriminator_model.train(disc_X, disc_Y)
 
-            if step % 10 == 0:
+            generator_model.update_disc_loss(disc_loss)
+            with tf.device(args.gpus_mapper["generator"]):
+                gen_loss = generator_model.train(train_X, train_Y)
+
+            add_loss_to_history(gen_loss, disc_loss)
+
+            if step % 100 == 0:
                 print(f"epoch: {e}, step: {step}")
-                print(f"loss generator: {gen_loss}, loss dirscriminator: {desc_loss}")
 
         if args.ckpnt:
             print("Saving checkpoint...")
             discriminator_model.save()
             generator_model.save()
+            flush_loss_history(args.history_path)
 
 
 if __name__ == "__main__":
@@ -135,5 +150,10 @@ if __name__ == "__main__":
 
     if config.location == "local":
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials_gcloud.json"
+
+    gpus_mapper = setup_device_use()
+    set_to_memory_growth()
+
+    setattr(args, "gpus_mapper", gpus_mapper)
 
     main(args)

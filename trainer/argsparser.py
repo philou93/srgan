@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument("--ckpnt", type=bool, default=False, required=False)  # gs://hrgan_1/ckpnt/nom.h5
     parser.add_argument("--ckpnt-gen", type=str, default="gs://hrgan_1/ckpnt/generator.h5", required=False)
     parser.add_argument("--ckpnt-discr", type=str, default="gs://hrgan_1/ckpnt/discriminator.h5", required=False)
+    parser.add_argument("--history-path", type=str, default="gs://hrgan_1/ckpnt/history.csv", required=False)
 
     parser.add_argument("--weights-discr-path", type=str, required=False)
     parser.add_argument("--weights-gen-path", type=str, required=False)

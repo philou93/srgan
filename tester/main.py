@@ -5,46 +5,26 @@ import matplotlib.pyplot as plt
 
 from tester.argsparser import parse_args
 
+from trainer.utils.calcul_util import preprocess_imgs
 from trainer.generator import Generator
-from trainer.utils.calcul_util import downsize_dims_by_factor_no_channel, downsize_dims_by_factor
-from trainer.utils.normalize_fcts import normalize_between_0_1, unnormalize_between_0_1
 
-hr_input_dims = [320, 640, 3]
+hr_input_dims = [200, 200, 3]
 
 
-def get_images(image_paths):
+def crop(image, shape):
+    return image[:shape[0], :shape[1], :]
+
+
+def get_images(image_paths, lr_factor):
     dataset = []
+    originals = []
+    for image_path in image_paths:
+        original_image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+        image_input, output_img = preprocess_imgs(original_image, hr_input_dims, lr_factor, pad=False)
+        dataset.append(image_input)
+        originals.append(output_img)
 
-    if hr_input_dims[-1] == 1:
-        read_flag = cv2.IMREAD_GRAYSCALE
-    else:
-        read_flag = cv2.IMREAD_COLOR
-
-    for path in image_paths:
-        image = cv2.imread(path, read_flag)
-        image = np.atleast_3d(image)
-        dataset.append(image)
-
-    return dataset
-
-
-def downsize_images(images, lr_factor):
-    dataset = []
-    for image in images:
-        if image.shape[0] < hr_input_dims[0] or image.shape[1] < hr_input_dims[1]:
-            new_image = np.zeros(hr_input_dims)
-            new_image[:min([image.shape[0], hr_input_dims[0]]), :min([image.shape[1], hr_input_dims[1]]), :] = \
-                image[:min([image.shape[0], hr_input_dims[0]]), :min([image.shape[1], hr_input_dims[1]]), :]
-        else:
-            new_image = image[:hr_input_dims[0], :hr_input_dims[1], :]
-
-        downsampling_img = cv2.resize(new_image, downsize_dims_by_factor_no_channel(hr_input_dims, lr_factor)[::-1],
-                                      interpolation=cv2.INTER_NEAREST)
-        downsampling_img = normalize_between_0_1(np.atleast_3d(downsampling_img))
-
-        dataset.append([downsampling_img, new_image])
-
-    return dataset
+    return dataset, originals
 
 
 def show_result(original_img, input_img, output_img, lr_factor=4):
@@ -55,21 +35,21 @@ def show_result(original_img, input_img, output_img, lr_factor=4):
     plt.imshow(input_img)
     plt.show()
     plt.title("Résultat")
-    plt.imshow(output_img)
+    plt.imshow(output_img, )
     plt.show()
 
 
 def main(args):
-    images = get_images(args.images)
-    images = downsize_images(images, args.factor)
-    generator = Generator(downsize_dims_by_factor(hr_input_dims, args.factor), hr_input_dims, nb_filter_conv1=16)
+    inputs, originals = get_images(args.images, args.factor)
+    generator = Generator((None,None,3), (None, None, 3), nb_filter_conv1=16)
     generator.load_weights(args.gen_path)
 
-    for downsize_img, original_img in images:
-        generate_output = generator.forward(np.array([downsize_img]))
-        generate_img = unnormalize_between_0_1(generate_output)
-        input_img = unnormalize_between_0_1(downsize_img)
-        show_result(original_img, input_img, generate_img, lr_factor=args.factor)
+    for input_img, original in list(zip(inputs, originals)):
+        # original_size = original.shape
+        generate_output = generator.forward(np.array([input_img]))
+        generate_img = np.array(generate_output[0] * 255, dtype=np.int)
+        input_img = np.array(input_img * 255, dtype=np.int)
+        show_result(original, input_img, generate_img, lr_factor=args.factor)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,7 @@
 trainingInput:
-  scaleTier: CUSTOM
-  masterType: complex_model_l_gpu
-  runtimeVersion: "1.0"
+   scaleTier: CUSTOM
+   masterType: n1-highmem-16
+   masterConfig:
+      acceleratorConfig:
+         count: 2
+         type: NVIDIA_TESLA_P100
