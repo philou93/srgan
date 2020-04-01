@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument("--epoch", type=int, default=30, required=False)
     parser.add_argument("--step", type=int, default=100, required=False)
     parser.add_argument("--batch_size", type=int, default=4, required=False)
+    parser.add_argument("--lr-factor", type=int, default=4, required=False)
 
     # Simule le fait qu'on est sur google clud pour les paths
     parser.add_argument("--location", type=str, default="gcloud", choices=['local', 'gcloud'], required=False)

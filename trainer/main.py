@@ -90,7 +90,7 @@ def main(args):
     print("Getting dataset...")
     dataset = import_dataset(args.data_path, args.extension_file)
 
-    dataset_iter = image_generator(dataset, batch_size, partial(preprocessing, lr_factor=lr_factor))
+    dataset_iter = image_generator(dataset, batch_size, partial(preprocessing, lr_factor=args.lr_factor))
 
     discriminator_model = Discriminator(hr_input_dims, save_path=args.ckpnt_discr)
     if args.weights_discr_path:
@@ -128,6 +128,7 @@ def main(args):
 
             if step % 100 == 0:
                 print(f"epoch: {e}, step: {step}")
+                print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_loss}")
 
         if args.ckpnt:
             print("Saving checkpoint...")
