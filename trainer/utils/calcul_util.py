@@ -28,7 +28,8 @@ def preprocess_imgs(image, hr_input_dims, lr_factor, pad=False, interpolation=cv
         output_img = pad_image(output_img, (x, y, 3))
 
     image_input = resize_keep_ratio(output_img, [int(x / lr_factor), int(y / lr_factor)], interpolation)
-    image_input = resize_keep_ratio(image_input, [x, y], interpolation)
+    # image_input = resize_keep_ratio(image_input, [x, y], interpolation)
+    image_input = cv2.resize(image_input, (output_img.shape[1], output_img.shape[0]), interpolation=interpolation)
 
     image_input = image_input / 255
     output_img = output_img / 255

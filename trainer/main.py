@@ -14,7 +14,7 @@ from trainer.utils.download import split_bucket, download_images_async
 from trainer.utils.gpus import setup_device_use, set_to_memory_growth
 from trainer.utils.loss_history import add_loss_to_history, flush_loss_history
 
-hr_input_dims = [200, 200, 3]  # Hardcoder
+hr_input_dims = [300, 300, 3]  # Hardcoder
 
 
 def import_dataset(data_path, extension_file):
@@ -81,7 +81,7 @@ def image_generator(dataset, batch_size, ftc_preprocess):
 def main(args):
     global hr_input_dims
 
-    #TODO: il faudrait enregistrer les parametres pour reconstruire le model
+    # TODO: il faudrait enregistrer les parametres pour reconstruire le model
 
     epoch = args.epoch
     step_per_epoch = args.step
@@ -96,7 +96,7 @@ def main(args):
     if args.weights_discr_path:
         discriminator_model.load_weights(args.weights_discr_path)
 
-    generator_model = Generator(nb_filter_conv1=16, save_path=args.ckpnt_gen)
+    generator_model = Generator(nb_filter_conv1=32, save_path=args.ckpnt_gen)
     if args.weights_gen_path:
         generator_model.load_weights(args.weights_gen_path)
 
@@ -126,7 +126,7 @@ def main(args):
 
             add_loss_to_history(gen_loss, disc_loss)
 
-            if step % 100 == 0:
+            if step % int(step_per_epoch / 2) == 0:
                 print(f"epoch: {e}, step: {step}")
                 print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_loss}")
 

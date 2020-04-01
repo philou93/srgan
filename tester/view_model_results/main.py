@@ -1,12 +1,12 @@
 import os
+
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from tester.argsparser import parse_args
-
-from trainer.utils.calcul_util import preprocess_imgs
+from tester.view_model_results.argsparser import parse_args
 from trainer.models.generator import Generator
+from trainer.utils.calcul_util import preprocess_imgs
 
 hr_input_dims = [200, 200, 3]
 
@@ -39,17 +39,27 @@ def show_result(original_img, input_img, output_img, lr_factor=4):
     plt.show()
 
 
+def generate_heatmap(original_img, output_img):
+    heatmap = original_img - output_img  # Permet de visualiser où sont les différences dans l'image (mae).
+    heatmap = np.mean(heatmap, axis=2)
+    plt.title("heatmap")
+    plt.imshow(heatmap)
+    plt.show()
+
+
 def main(args):
     inputs, originals = get_images(args.images, args.factor)
-    generator = Generator(nb_filter_conv1=16)  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
+    generator = Generator(nb_filter_conv1=32)  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
     generator.load_weights(args.gen_path)
 
-    for input_img, original in list(zip(inputs, originals)):
+    for input_img, original in list(zip([inputs[0]], [originals[0]])):
         # original_size = original.shape
         generate_output = generator.forward(np.array([input_img]))
         generate_img = np.array(generate_output[0] * 255, dtype=np.int)
         input_img = np.array(input_img * 255, dtype=np.int)
+        original = np.array(original * 255, dtype=np.int)
         show_result(original, input_img, generate_img, lr_factor=args.factor)
+        generate_heatmap(original, generate_img)
 
 
 if __name__ == "__main__":
