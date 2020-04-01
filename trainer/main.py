@@ -96,7 +96,7 @@ def main(args):
     if args.weights_discr_path:
         discriminator_model.load_weights(args.weights_discr_path)
 
-    generator_model = Generator(nb_filter_conv1=32, save_path=args.ckpnt_gen)
+    generator_model = Generator(save_path=args.ckpnt_gen)
     if args.weights_gen_path:
         generator_model.load_weights(args.weights_gen_path)
 

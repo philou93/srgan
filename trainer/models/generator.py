@@ -1,67 +1,48 @@
 import tensorflow as tf
 from keras import Model
 from keras.initializers import VarianceScaling
-from keras.layers import Conv2D, BatchNormalization, Input, Add, ReLU
+from keras.layers import Conv2D, BatchNormalization, Input
 from keras.optimizers import Adam
 from tensorflow import Variable
+import keras.backend as K
 
 from trainer.models.base_model import BaseModel
 
 
+def penalize_loss(disc_loss):
+    def mse_loss(predict_y, target_y):
+        square_error = K.mean(tf.square(predict_y - target_y), axis=-1)
+        return square_error + disc_loss
+    return mse_loss
+
+
 class Generator(BaseModel):
 
-    def __init__(self, nb_filter_conv1=32, save_path="save/generator", optimizer=Adam(learning_rate=0.0001)):
+    def __init__(self, save_path="save/generator", optimizer=Adam(learning_rate=0.0001)):
         super().__init__(save_path, optimizer)
-        self.nb_filer_conv1 = nb_filter_conv1
+        self.discr_loss = tf.Variable(0.0)
         self.model = self.create_model()
         self.compile()
 
     def create_model(self):
-        self.disc_loss = Variable(initial_value=0.0, trainable=False, dtype=tf.float32)
-
         inputs = Input(shape=(None, None, 3))
-        x = Conv2D(self.nb_filer_conv1, kernel_size=9, strides=1, padding="same",
+        # Couche pour extraire les feature de l'image LR
+        x = Conv2D(128, kernel_size=9, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(inputs)
-        x = Conv2D(self.nb_filer_conv1, kernel_size=9, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
-        x = Conv2D(self.nb_filer_conv1, kernel_size=9, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
-        x = ReLU()(x)
+        x = Conv2D(128, kernel_size=9, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(inputs)
         x = BatchNormalization()(x)
 
-        y = Conv2D(self.nb_filer_conv1 * 2, kernel_size=7, strides=1, padding="same",
+        # Reconstruire les features dans le SR
+        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
-        y = Conv2D(self.nb_filer_conv1 * 2, kernel_size=7, strides=1, padding="same",
+        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(y)
-        y = ReLU()(y)
         y = BatchNormalization()(y)
-        shortcut = Conv2D(self.nb_filer_conv1 * 2, kernel_size=1, strides=1, padding="same",
-                          kernel_initializer=VarianceScaling(scale=2))(x)
-        x = Add()([y, shortcut])
-
-        y = Conv2D(self.nb_filer_conv1 * 4, kernel_size=5, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
-        y = Conv2D(self.nb_filer_conv1 * 4, kernel_size=5, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(y)
-        y = ReLU()(y)
-        y = BatchNormalization()(y)
-        shortcut = Conv2D(self.nb_filer_conv1 * 4, kernel_size=1, strides=1, padding="same",
-                          kernel_initializer=VarianceScaling(scale=2))(x)
-        x = Add()([y, shortcut])
-
-        y = Conv2D(self.nb_filer_conv1 * 4, kernel_size=3, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
-        y = Conv2D(self.nb_filer_conv1 * 4, kernel_size=3, strides=1, padding="same",
-                   kernel_initializer=VarianceScaling(scale=2))(y)
-        y = ReLU()(y)
-        y = BatchNormalization()(y)
-        shortcut = Conv2D(self.nb_filer_conv1 * 4, kernel_size=1, strides=1, padding="same",
-                          kernel_initializer=VarianceScaling(scale=2))(x)
-        y = Add()([y, shortcut])
 
         # output_img va etre 1 fm si gray scale et 3 fm si couleur.
-        output_img = Conv2D(3, kernel_size=1, strides=1,
-                            kernel_initializer=VarianceScaling(scale=2), activation="softmax")(y)
+        output_img = Conv2D(3, kernel_size=5, strides=1, activation="relu", padding="same",
+                            kernel_initializer=VarianceScaling(scale=2))(y)
 
         # fm = MaxPool2D(3, strides=1)(output_img)
 
@@ -72,15 +53,16 @@ class Generator(BaseModel):
 
     def compile(self):
         # Todo: changer pour loss sur fm
-        self.model.compile(loss="mae", optimizer=self.optimizer, metrics=["mae"])
+        self.model.compile(loss=penalize_loss(self.discr_loss), optimizer=self.optimizer, metrics=["mse"])
 
     def update_disc_loss(self, loss):
         loss = abs(loss * 0.001)
-        self.disc_loss.assign(loss)
+        self.discr_loss.assign(loss)
+        tf.print(self.discr_loss)
 
     @classmethod
     def load(cls, nb_filter_conv1=32, load_path="save/discriminator/model.h5", save_path="save/discriminator"):
-        gen = Generator(nb_filter_conv1=nb_filter_conv1, save_path=save_path)
+        gen = Generator(save_path=save_path)
         gen.model.load_weights(load_path)
         gen.compile()
         return gen

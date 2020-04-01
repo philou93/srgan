@@ -1,5 +1,6 @@
 import keras.applications
-from keras.layers import Flatten, Dense
+from keras.layers import Flatten, Dense, Input, Conv2D, BatchNormalization, MaxPool2D
+from keras.initializers import VarianceScaling
 from keras.optimizers import Adam
 
 from trainer.models.base_model import BaseModel
@@ -14,11 +15,35 @@ class Discriminator(BaseModel):
         self.compile()
 
     def create_model(self):
-        base_model = keras.applications.VGG16(input_shape=self.input_dims, include_top=False, pooling=None)
-        classifier_part = Flatten()(base_model.layers[-1].output)
+        # base_model = keras.applications.VGG16(input_shape=self.input_dims, include_top=False, pooling=None)
+
+        # Petit VGG
+        inputs = Input(shape=self.input_dims)
+        x = Conv2D(32, kernel_size=3, strides=2, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(inputs)
+        x = Conv2D(32, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = BatchNormalization()(x)
+        x = MaxPool2D()(x)
+        x = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = MaxPool2D()(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(128, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = MaxPool2D()(x)
+        x = BatchNormalization()(x)
+        x = Conv2D(256, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = MaxPool2D()(x)
+        x = BatchNormalization()(x)
+        classifier_part = Flatten()(x)
+        classifier_part = Dense(1024, activation="relu")(classifier_part)
         classifier_part = Dense(512, activation="relu")(classifier_part)
-        classifier_part = Dense(1, activation="sigmoid")(classifier_part)
-        model = keras.Model(inputs=[base_model.input], outputs=[classifier_part])
+        classifier_part = Dense(1, activation="softmax")(classifier_part)
+        model = keras.Model(inputs=[inputs], outputs=[classifier_part])
         return model
 
     def compile(self):

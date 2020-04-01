@@ -49,7 +49,7 @@ def generate_heatmap(original_img, output_img):
 
 def main(args):
     inputs, originals = get_images(args.images, args.factor)
-    generator = Generator(nb_filter_conv1=32)  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
+    generator = Generator()  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
     generator.load_weights(args.gen_path)
 
     for input_img, original in list(zip([inputs[0]], [originals[0]])):
