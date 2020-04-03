@@ -1,24 +1,24 @@
+import keras.backend as K
 import tensorflow as tf
 from keras import Model
 from keras.initializers import VarianceScaling
 from keras.layers import Conv2D, BatchNormalization, Input
 from keras.optimizers import Adam
-from tensorflow import Variable
-import keras.backend as K
 
 from trainer.models.base_model import BaseModel
 
 
 def penalize_loss(disc_loss):
     def mse_loss(predict_y, target_y):
-        square_error = K.mean(tf.square(predict_y - target_y), axis=-1)
+        square_error = tf.math.reduce_sum(tf.square(predict_y - target_y))
+        square_error = square_error / tf.cast(tf.shape(predict_y)[0], dtype=tf.float32)
         return square_error + disc_loss
     return mse_loss
 
 
 class Generator(BaseModel):
 
-    def __init__(self, save_path="save/generator", optimizer=Adam(learning_rate=0.0001)):
+    def __init__(self, save_path="save/generator", optimizer=Adam(learning_rate=0.00005)):
         super().__init__(save_path, optimizer)
         self.discr_loss = tf.Variable(0.0)
         self.model = self.create_model()
@@ -47,7 +47,6 @@ class Generator(BaseModel):
         # fm = MaxPool2D(3, strides=1)(output_img)
 
         model = Model(inputs=[inputs], outputs=[output_img])  # outputs=[output_img, fm]
-        # model.add_loss(self.disc_loss)  # TODO: est-ce que ca marche vraiment???
 
         return model
 
@@ -58,10 +57,9 @@ class Generator(BaseModel):
     def update_disc_loss(self, loss):
         loss = abs(loss * 0.001)
         self.discr_loss.assign(loss)
-        tf.print(self.discr_loss)
 
     @classmethod
-    def load(cls, nb_filter_conv1=32, load_path="save/discriminator/model.h5", save_path="save/discriminator"):
+    def load(cls, load_path="save/discriminator/model.h5", save_path="save/discriminator"):
         gen = Generator(save_path=save_path)
         gen.model.load_weights(load_path)
         gen.compile()

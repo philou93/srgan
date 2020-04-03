@@ -42,7 +42,7 @@ class Discriminator(BaseModel):
         classifier_part = Flatten()(x)
         classifier_part = Dense(1024, activation="relu")(classifier_part)
         classifier_part = Dense(512, activation="relu")(classifier_part)
-        classifier_part = Dense(1, activation="softmax")(classifier_part)
+        classifier_part = Dense(1, activation="sigmoid")(classifier_part)
         model = keras.Model(inputs=[inputs], outputs=[classifier_part])
         return model
 

@@ -35,15 +35,17 @@ def show_result(original_img, input_img, output_img, lr_factor=4):
     plt.imshow(input_img)
     plt.show()
     plt.title("Résultat")
-    plt.imshow(output_img, )
+    plt.imshow(output_img)
     plt.show()
 
 
-def generate_heatmap(original_img, output_img):
-    heatmap = original_img - output_img  # Permet de visualiser où sont les différences dans l'image (mae).
+def generate_heatmap(original_img, img, title):
+    # Permet de visualiser où sont les différences dans l'image (mae).
+    heatmap = np.abs(original_img / 255 - img / 255)
+    mse = np.sum(heatmap)
     heatmap = np.mean(heatmap, axis=2)
-    plt.title("heatmap")
-    plt.imshow(heatmap)
+    plt.title(f"heatmap ({title}) - mse: {'%.2f' % mse}")
+    plt.imshow(heatmap, cmap='gray')
     plt.show()
 
 
@@ -59,7 +61,8 @@ def main(args):
         input_img = np.array(input_img * 255, dtype=np.int)
         original = np.array(original * 255, dtype=np.int)
         show_result(original, input_img, generate_img, lr_factor=args.factor)
-        generate_heatmap(original, generate_img)
+        generate_heatmap(original, generate_img, "Generated")
+        generate_heatmap(original, input_img, "Input")
 
 
 if __name__ == "__main__":

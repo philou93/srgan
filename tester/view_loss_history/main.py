@@ -19,9 +19,9 @@ def main(args):
             discriminator_history[-1].append(history[1])
 
     if args.sgl:
-        show_single_model_loss(generator_history, "Generator", mean=False)
+        show_single_model_loss(generator_history[5:], "Generator")
     if args.sdl:
-        show_single_model_loss(discriminator_history, "Discriminator", mean=False)
+        show_single_model_loss(discriminator_history, "Discriminator")
 
 
 if __name__ == "__main__":

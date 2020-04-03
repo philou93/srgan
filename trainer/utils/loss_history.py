@@ -66,7 +66,6 @@ def flush_loss_history(generator_history, discriminator_history, path, **kwargs)
         print(f"Creating history file: {path}")
         file_io.write_string_to_file(path, "")  # On crée ou reset le fichier
     with file_io.FileIO(path, mode='a') as input_f:
-        # input_f.seek(input_f.tell())
         for i in range(len(generator_history)):
             input_f.write(f"{generator_history[i]},{discriminator_history[i]}\n")
     print(f"{len(generator_history)} of history element will be flush.")

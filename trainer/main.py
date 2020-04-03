@@ -115,6 +115,10 @@ def main(args):
             disc_X = np.concatenate([train_Y, img_outputs])
 
             disc_Y = np.zeros(2 * batch_size)
+            """
+            On ne met pas 1 pour les images générées parce que même si le modèle comprend que cest pas une vrai 
+            image, on veut lui donner un peu de difficulté (il va toujours avoir un doute si cest faut).
+            """
             disc_Y[:batch_size] = 0.95
 
             with tf.device(args.gpus_mapper["descriminator"]):
@@ -148,7 +152,6 @@ if __name__ == "__main__":
 
     gpus_mapper = setup_device_use()
     set_to_memory_growth()
-
     setattr(args, "gpus_mapper", gpus_mapper)
 
     main(args)
