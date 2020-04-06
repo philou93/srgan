@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tester.view_model_results.argsparser import parse_args
+from tester.view_model_results.score_util import psnr_value, ssim_value, format
+
 from trainer.models.generator import Generator
 from trainer.utils.calcul_util import preprocess_imgs
 
-hr_input_dims = [200, 200, 3]
+hr_input_dims = [700, 700, 3]
 
 
 def crop(image, shape):
@@ -31,10 +33,13 @@ def show_result(original_img, input_img, output_img, lr_factor=4):
     plt.title("Image originale")
     plt.imshow(original_img)
     plt.show()
-    plt.title(f"Image réduite ({lr_factor}x)")
+    plt.title(f"Image réduite ({lr_factor}x) - "
+              f"PSNR ({format(psnr_value(original_img, input_img))}) - "
+              f"SSIM ({format(ssim_value(original_img, input_img))})")
     plt.imshow(input_img)
     plt.show()
-    plt.title("Résultat")
+    plt.title(f"Résultat - PSNR ({format(psnr_value(original_img, output_img))}) - "
+              f"SSIM ({format(ssim_value(original_img, output_img))})")
     plt.imshow(output_img)
     plt.show()
 
@@ -44,7 +49,7 @@ def generate_heatmap(original_img, img, title):
     heatmap = np.abs(original_img / 255 - img / 255)
     mse = np.sum(heatmap)
     heatmap = np.mean(heatmap, axis=2)
-    plt.title(f"heatmap ({title}) - mse: {'%.2f' % mse}")
+    plt.title(f"heatmap ({title}) - mse: {format(mse)}")
     plt.imshow(heatmap, cmap='gray')
     plt.show()
 
@@ -54,7 +59,7 @@ def main(args):
     generator = Generator()  # IMPORTANT: Il faut recréer le modèle exacte à l'entrainement
     generator.load_weights(args.gen_path)
 
-    for input_img, original in list(zip([inputs[0]], [originals[0]])):
+    for input_img, original in list(zip(inputs, originals)):
         # original_size = original.shape
         generate_output = generator.forward(np.array([input_img]))
         generate_img = np.array(generate_output[0] * 255, dtype=np.int)

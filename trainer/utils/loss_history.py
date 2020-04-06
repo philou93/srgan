@@ -64,7 +64,7 @@ def flush_loss_history(generator_history, discriminator_history, path, **kwargs)
     """
     if not kwargs["first_time"]:
         print(f"Creating history file: {path}")
-        file_io.write_string_to_file(path, "")  # On crée ou reset le fichier
+        # file_io.write_string_to_file(path, "")  # On crée ou reset le fichier
     with file_io.FileIO(path, mode='a') as input_f:
         for i in range(len(generator_history)):
             input_f.write(f"{generator_history[i]},{discriminator_history[i]}\n")

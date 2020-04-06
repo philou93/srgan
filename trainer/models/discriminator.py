@@ -21,7 +21,9 @@ class Discriminator(BaseModel):
         inputs = Input(shape=self.input_dims)
         x = Conv2D(32, kernel_size=3, strides=2, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(inputs)
-        x = Conv2D(32, kernel_size=3, strides=1, padding="same", activation="relu",
+        x = Conv2D(32, kernel_size=3, strides=2, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = Conv2D(32, kernel_size=3, strides=2, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
         x = BatchNormalization()(x)
         x = MaxPool2D()(x)
@@ -35,13 +37,9 @@ class Discriminator(BaseModel):
                    kernel_initializer=VarianceScaling(scale=2))(x)
         x = MaxPool2D()(x)
         x = BatchNormalization()(x)
-        x = Conv2D(256, kernel_size=3, strides=1, padding="same", activation="relu",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
-        x = MaxPool2D()(x)
-        x = BatchNormalization()(x)
         classifier_part = Flatten()(x)
-        classifier_part = Dense(1024, activation="relu")(classifier_part)
         classifier_part = Dense(512, activation="relu")(classifier_part)
+        classifier_part = Dense(128, activation="relu")(classifier_part)
         classifier_part = Dense(1, activation="sigmoid")(classifier_part)
         model = keras.Model(inputs=[inputs], outputs=[classifier_part])
         return model
