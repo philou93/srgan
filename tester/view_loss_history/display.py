@@ -11,6 +11,6 @@ def show_single_model_loss(losses, model_name, mean=True):
     plt.plot(losses)
     plt.ylabel('mse')
     plt.xlabel('step')
-    plt.xticks(list(range(losses.shape[0])))
+    plt.xticks(list(range(0, losses.shape[0], 10)))
     plt.title(f'{model_name} losses')
     plt.show()

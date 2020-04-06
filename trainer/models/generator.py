@@ -2,7 +2,7 @@ import keras.backend as K
 import tensorflow as tf
 from keras import Model
 from keras.initializers import VarianceScaling
-from keras.layers import Conv2D, BatchNormalization, Input
+from keras.layers import Conv2D, BatchNormalization, Input, Add
 from keras.optimizers import Adam
 
 from trainer.models.base_model import BaseModel
@@ -30,15 +30,25 @@ class Generator(BaseModel):
         x = Conv2D(128, kernel_size=9, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(inputs)
         x = Conv2D(128, kernel_size=9, strides=1, padding="same", activation="relu",
-                   kernel_initializer=VarianceScaling(scale=2))(inputs)
+                   kernel_initializer=VarianceScaling(scale=2))(x)
+        x = Conv2D(64, kernel_size=9, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(x)
         x = BatchNormalization()(x)
 
         # Reconstruire les features dans le SR
-        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
+        y = Conv2D(64, kernel_size=5, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
         y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(y)
+        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(y)
+
+        shortcut = Conv2D(64, 1, strides=1, activation="relu")(x)
+        y = Add()([y, shortcut])
         y = BatchNormalization()(y)
+
+        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
+                   kernel_initializer=VarianceScaling(scale=2))(y)
 
         # output_img va etre 1 fm si gray scale et 3 fm si couleur.
         output_img = Conv2D(3, kernel_size=5, strides=1, activation="relu", padding="same",
@@ -55,7 +65,11 @@ class Generator(BaseModel):
         self.model.compile(loss=penalize_loss(self.discr_loss), optimizer=self.optimizer, metrics=["mse"])
 
     def update_disc_loss(self, loss):
-        loss = abs(loss * 0.001)
+        """
+        On prend le log parce que si le discriminateur distingue le genere du non, on veut amplifier cette erreur et
+        s'il n'arrive pas a distinguer on veut minimiser la correction a apporter.
+        """
+        loss = - tf.math.log(loss * 0.001)
         self.discr_loss.assign(loss)
 
     @classmethod

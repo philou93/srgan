@@ -3,8 +3,8 @@ import csv
 from tester.view_loss_history.argsparser import parse_args
 from tester.view_loss_history.display import *
 
-def main(args):
 
+def main(args):
     generator_history = []
     discriminator_history = []
 
@@ -19,7 +19,7 @@ def main(args):
             discriminator_history[-1].append(history[1])
 
     if args.sgl:
-        show_single_model_loss(generator_history[5:], "Generator")
+        show_single_model_loss(generator_history, "Generator")
     if args.sdl:
         show_single_model_loss(discriminator_history, "Discriminator")
 
