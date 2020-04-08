@@ -15,6 +15,4 @@ def parse_args():
 
     parser.add_argument("--factor", type=int, default=4, required=False)
 
-    parse_args = parser.parse_args()
-
     return parser.parse_args()
