@@ -18,7 +18,7 @@ def penalize_loss(disc_loss):
 
 class Generator(BaseModel):
 
-    def __init__(self, save_path="save/generator", optimizer=Adam(learning_rate=0.00005)):
+    def __init__(self, save_path="save/generator", optimizer=Adam(learning_rate=0.0005)):
         super().__init__(save_path, optimizer)
         self.discr_loss = tf.Variable(0.0)
         self.model = self.create_model()
@@ -31,15 +31,11 @@ class Generator(BaseModel):
                    kernel_initializer=VarianceScaling(scale=2))(inputs)
         x = Conv2D(128, kernel_size=9, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
-        x = Conv2D(64, kernel_size=9, strides=1, padding="same", activation="relu",
-                   kernel_initializer=VarianceScaling(scale=2))(x)
         x = BatchNormalization()(x)
 
         # Reconstruire les features dans le SR
         y = Conv2D(64, kernel_size=5, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
-        y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
-                   kernel_initializer=VarianceScaling(scale=2))(y)
         y = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(y)
 
