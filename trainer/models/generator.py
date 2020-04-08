@@ -10,8 +10,8 @@ from trainer.models.base_model import BaseModel
 
 def penalize_loss(disc_loss):
     def mse_loss(predict_y, target_y):
-        square_error = tf.math.reduce_sum(tf.square(predict_y - target_y))
-        square_error = square_error / tf.cast(tf.shape(predict_y)[0], dtype=tf.float32)
+        square_error = tf.math.reduce_mean(tf.square(predict_y - target_y))
+        # square_error = square_error / tf.cast(tf.shape(predict_y)[0], dtype=tf.float32)
         return square_error + disc_loss
     return mse_loss
 
@@ -69,7 +69,7 @@ class Generator(BaseModel):
         On prend le log parce que si le discriminateur distingue le genere du non, on veut amplifier cette erreur et
         s'il n'arrive pas a distinguer on veut minimiser la correction a apporter.
         """
-        loss = - tf.math.log(loss * 0.001)
+        loss = - tf.math.log(loss)
         self.discr_loss.assign(loss)
 
     @classmethod

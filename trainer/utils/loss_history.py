@@ -9,15 +9,17 @@ def history_memory(func):
       :return:
       """
     generator_history = []
-    discriminator_history = []
+    discriminator_y_history = []
+    discriminator_gen_history = []
 
     def outer_wrapper(f):
         first_time = False
 
         def wrapper(*args, **kwargs):
             nonlocal first_time
-            nonlocal generator_history, discriminator_history
-            func(f(generator_history, discriminator_history, *args, **kwargs, first_time=first_time))
+            nonlocal generator_history, discriminator_y_history, discriminator_gen_history
+            func(f(generator_history, discriminator_y_history, discriminator_gen_history, *args, **kwargs,
+                   first_time=first_time))
             first_time = True
 
         return wrapper
@@ -40,35 +42,29 @@ def act_on_history(func):
 
 
 @act_on_history
-def add_loss_to_history(generator_history, discriminator_history, generator_loss, discriminator_loss, **kwargs):
+def add_loss_to_history(generator_history, discriminator_y_history, discriminator_gen_history, generator_loss,
+                        discriminator_y_loss, discriminator_gen_loss, **kwargs):
     """
     Ajoute les loss à l'historique.
-    :param generator_history:
-    :param discriminator_history:
-    :param generator_loss:
-    :param discriminator_loss:
-    :return:
     """
     generator_history.append(generator_loss)
-    discriminator_history.append(discriminator_loss)
+    discriminator_y_history.append(discriminator_y_loss)
+    discriminator_gen_history.append(discriminator_gen_loss)
 
 
 @act_on_history
-def flush_loss_history(generator_history, discriminator_history, path, **kwargs):
+def flush_loss_history(generator_history, discriminator_y_history, discriminator_gen_history, path, **kwargs):
     """
     Enregistre les valeurs dans les listes des historiques et les resets.
-    :param generator_history:
-    :param discriminator_history:
-    :param path:
-    :return:
     """
     if not kwargs["first_time"]:
         print(f"Creating history file: {path}")
-        # file_io.write_string_to_file(path, "")  # On crée ou reset le fichier
+        file_io.write_string_to_file(path, "")  # On crée ou reset le fichier
     with file_io.FileIO(path, mode='a') as input_f:
         for i in range(len(generator_history)):
-            input_f.write(f"{generator_history[i]},{discriminator_history[i]}\n")
+            input_f.write(f"{generator_history[i]},{discriminator_y_history[i]},{discriminator_gen_history[i]}\n")
     print(f"{len(generator_history)} of history element will be flush.")
     del generator_history[:]
-    del discriminator_history[:]
+    del discriminator_y_history[:]
+    del discriminator_gen_history[:]
     print(f"History flush.")

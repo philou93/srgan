@@ -112,27 +112,27 @@ def main(args):
             with tf.device(args.gpus_mapper["generator"]):
                 img_outputs = generator_model.forward(train_X)
 
-            disc_X = np.concatenate([train_Y, img_outputs])
-
-            disc_Y = np.zeros(2 * batch_size)
-            """
-            On ne met pas 1 pour les images générées parce que même si le modèle comprend que cest pas une vrai 
-            image, on veut lui donner un peu de difficulté (il va toujours avoir un doute si cest faut).
-            """
-            disc_Y[:batch_size] = 0.95
+            disc_Y_real = np.zeros(batch_size)
+            disc_Y_gen = np.array([0.95] * batch_size)
 
             with tf.device(args.gpus_mapper["descriminator"]):
-                disc_loss = discriminator_model.train(disc_X, disc_Y)
+                """
+                On les fait séparé parce qu'on veut seulement appliquer la parie des images générées lors de la 
+                correction du générateur.
+                """
+                disc_loss_y = discriminator_model.train(train_X, disc_Y_real)
+                disc_loss_gen = discriminator_model.train(img_outputs, disc_Y_gen)
+                disc_total_loss = disc_loss_gen + disc_loss_y
 
-            generator_model.update_disc_loss(disc_loss)
+            generator_model.update_disc_loss(disc_loss_gen)
             with tf.device(args.gpus_mapper["generator"]):
                 gen_loss = generator_model.train(train_X, train_Y)
 
-            add_loss_to_history(gen_loss, disc_loss)
+            add_loss_to_history(gen_loss, disc_loss_y, disc_loss_gen)
 
             if step % int(step_per_epoch / 2) == 0:
                 print(f"epoch: {e}, step: {step}")
-                print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_loss}")
+            print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_total_loss}")
 
         if args.ckpnt:
             print("Saving checkpoint...")
