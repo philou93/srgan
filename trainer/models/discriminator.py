@@ -31,12 +31,12 @@ class Discriminator(BaseModel):
                    kernel_initializer=VarianceScaling(scale=2))(x)
         x = Conv2D(64, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
-        x = MaxPool2D()(x)
         x = BatchNormalization()(x)
+        x = MaxPool2D()(x)
         x = Conv2D(128, kernel_size=3, strides=1, padding="same", activation="relu",
                    kernel_initializer=VarianceScaling(scale=2))(x)
-        x = MaxPool2D()(x)
         x = BatchNormalization()(x)
+        x = MaxPool2D()(x)
         classifier_part = Flatten()(x)
         classifier_part = Dense(512, activation="relu")(classifier_part)
         classifier_part = Dense(128, activation="relu")(classifier_part)

@@ -1,4 +1,3 @@
-import keras.backend as K
 import tensorflow as tf
 from keras import Model
 from keras.initializers import VarianceScaling
@@ -65,7 +64,7 @@ class Generator(BaseModel):
         On prend le log parce que si le discriminateur distingue le genere du non, on veut amplifier cette erreur et
         s'il n'arrive pas a distinguer on veut minimiser la correction a apporter.
         """
-        loss = - tf.math.log(loss)
+        loss = tf.cast(-tf.math.log(loss*0.1), dtype=tf.float32)
         self.discr_loss.assign(loss)
 
     @classmethod
