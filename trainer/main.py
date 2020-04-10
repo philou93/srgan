@@ -14,7 +14,7 @@ from trainer.utils.download import split_bucket, download_images_async
 from trainer.utils.gpus import setup_device_use, set_to_memory_growth
 from trainer.utils.loss_history import add_loss_to_history, flush_loss_history
 
-hr_input_dims = [400, 400, 3]  # Hardcoder
+hr_input_dims = [500, 500, 3]  # Hardcoder
 
 
 def import_dataset(data_path, extension_file):
@@ -132,7 +132,7 @@ def main(args):
 
             if step % int(step_per_epoch / 2) == 0:
                 print(f"epoch: {e}, step: {step}")
-            print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_total_loss}")
+                print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_total_loss}")
 
         if args.ckpnt:
             print("Saving checkpoint...")
