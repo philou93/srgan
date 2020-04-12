@@ -53,7 +53,7 @@ Pour analyser les résultats, lancer les scripts "<i>main.py</i>" dans les sous-
     <br>
     <b>--save-to</b> (obligatoire): dossier ou les images seront enregistrées sous la forme "<i>enhance_image_name.jpg|png|...</i>"
     <br><br>
-    <u>exemple</u>: tester/enhance_image/main.py <b>--gen-path</b>.\save\generator\ckpnt_generator.h5 <b>--image</b
+    <u>exemple</u>: tester/enhance_image/main.py <b>--gen-path</b> .\save\generator\ckpnt_generator.h5 <b>--image</b
     > path/to/image1.jpg path/to/image2.png <b>--new-size</b> 850,730 <b>--save-to</b> path/to/save/image
     </ul>
 </ul>
