@@ -10,7 +10,7 @@ Ce projet est une application qui permet de générer une image super définitio
 Pour lancer un entrainement exécuter le script "<i>trainer/main.py</i>". Voici une liste des arguments possibles: <br>
     <b>--data-path</b> (obligatoire): chemin vers les données d'entrainement (les chemin pour gcloud commence par "<i>gs://</i>")<br>
     <b>--location</b> : [gcloud, <b>local</b>] est-ce que les images sont enregistrées sur <i>google cloud</i> ou
-     localement (<b>défaut</b>: gcloud). 
+     localement (<b>défaut</b>: gcloud). <br>
     <b>--extension-file</b> :  les types d'exention à considérer (<i>ex: jpg png</i>)<br>
     <b>--ckpnt-gen</b> : où enregistrer les poids du modèle générateur (<i>.h5</i>)<br>
     <b>--ckpnt-discr</b> : où enregistrer les poids du modèle discriminateur (<i>.h5</i>)<br>
@@ -29,6 +29,7 @@ Pour lancer un entrainement exécuter le script "<i>trainer/main.py</i>". Voici 
      >--epoch</b> 200 <b>--step</b> 100 <b>--batch_size</b> 8 <b>--ckpnt-gen</b> ./save/generator/ckpnt_generator.h5
        <b>--ckpnt-disc</b> ./save/discriminator/ckpnt_discriminator.h5
 </ul>
+<br>
 <ul>
 Pour analyser les résultats, lancer les scripts "<i>main.py</i>" dans les sous-dossiers de "<i>tester/</i>".
     <ul>
@@ -41,6 +42,7 @@ Pour analyser les résultats, lancer les scripts "<i>main.py</i>" dans les sous-
      images.<br>
      <b>--factor</b> : facteur par lequel on veut sous-échantilloner l'image de référence.<br>
     </ul>
+ <br>
     <ul>
     <u><b>enhance_image</b></u> : Prend une ou des images en entré et ressort une ou des images rehaussées.<br>
     <b>--gen-path</b> (obligatoire): chemin vers les poids du modèle (doit être un <i>.h5</i>) <br>
