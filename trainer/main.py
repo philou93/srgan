@@ -134,11 +134,10 @@ def main(args):
                 print(f"epoch: {e}, step: {step}")
                 print(f"Generator loss: {gen_loss}  --  Discriminator loss: {disc_total_loss}")
 
-        if args.ckpnt:
-            print("Saving checkpoint...")
-            discriminator_model.save()
-            generator_model.save()
-            flush_loss_history(args.history_path)
+        print("Saving checkpoint...")
+        discriminator_model.save()
+        generator_model.save()
+        flush_loss_history(args.history_path)
 
 
 if __name__ == "__main__":
