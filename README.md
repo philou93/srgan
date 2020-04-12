@@ -23,7 +23,6 @@ Pour lancer un entrainement exécuter le script "<i>trainer/main.py</i>". Voici 
     <b>--weights-discr-path</b> : chemin pour charger les poids d'un modèle discriminateur pré-entrainé (doit être un
      .h5)<br>
      <b>--job-dir</b> : voir https://cloud.google.com/sdk/gcloud/reference/ml-engine/jobs/submit/training
-     >
      <br><br>
      <u>exemple</u>: trainer/main.py <b>--data-path</b> path/to/images <b>--location</b> local <b
      >--epoch</b> 200 <b>--step</b> 100 <b>--batch_size</b> 8 <b>--ckpnt-gen</b> ./save/generator/ckpnt_generator.h5
