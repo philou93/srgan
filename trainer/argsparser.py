@@ -8,9 +8,9 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--data-path", required=False)
-    parser.add_argument("--extension-file", nargs='+', required=True)
-    parser.add_argument("--ckpnt", type=bool, default=False, required=False)  # gs://srgan_2/ckpnt/nom.h5
+    parser.add_argument("--data-path", required=True)
+    parser.add_argument("--extension-file", nargs='+', default=["jpg", "png"], required=False)
+
     parser.add_argument("--ckpnt-gen", type=str, default="gs://srgan_2/ckpnt/generator.h5", required=False)
     parser.add_argument("--ckpnt-discr", type=str, default="gs://srgan_2/ckpnt/discriminator.h5", required=False)
     parser.add_argument("--history-path", type=str, default="gs://srgan_2/ckpnt/history.csv", required=False)

@@ -12,6 +12,8 @@ def parse_args():
 
     parser.add_argument("--images", type=str, nargs='+', default="local", required=True)
 
-    parser.add_argument("--factor", type=int, default=4, required=False)
+    parser.add_argument("--new-size", type=str, required=True)
+
+    parser.add_argument("--save-to", type=str, required=True)
 
     return parser.parse_args()
