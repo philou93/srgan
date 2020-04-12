@@ -14,11 +14,11 @@ Pour lancer un entrainement exécuter le script "<i>trainer/main.py</i>". Voici 
     <b>--extension-file</b> :  les types d'exention à considérer (<i>ex: jpg png</i>)<br>
     <b>--ckpnt-gen</b> : où enregistrer les poids du modèle générateur (<i>.h5</i>)<br>
     <b>--ckpnt-discr</b> : où enregistrer les poids du modèle discriminateur (<i>.h5</i>)<br>
-    <b>--history-path</b> : où enregistrer l'historique erreurs (<i>.csv</i>)<br><br>
+    <b>--history-path</b> : où enregistrer l'historique erreurs (<i>.csv</i>)<br>
     <b>--epoch</b> : nombre d'époque (<b>défaut</b>: 30) <br>
     <b>--step</b> : nombre de step par époque (<b>défaut</b>: 100) <br>
-    <b>--batch_size</b> : (<b>default</b>: 4)
-    <b>--lr-factor</b>: facteur de division pour le sous-échantillonage à l'entrainement (<b>défaut</b>: 4) <br><br>
+    <b>--batch_size</b> : (<b>default</b>: 4)<br>
+    <b>--lr-factor</b>: facteur de division pour le sous-échantillonage à l'entrainement (<b>défaut</b>: 4) <br>
     <b>--weights-gen-path</b> : chemin pour charger les poids d'un modèle générateur pré-entrainé (doit être un .h5)<br>
     <b>--weights-discr-path</b> : chemin pour charger les poids d'un modèle discriminateur pré-entrainé (doit être un
      .h5)<br>
@@ -35,6 +35,7 @@ Pour analyser les résultats, lancer les scripts "<i>main.py</i>" dans les sous-
     <ul>
     <b>view_loss_history</b> : sort l'évolution des <i>loss</i> de l'entrainement sous forme de graphiques.
     </ul>
+ <br>
     <ul>
     <b>view_model_results</b> : Affiche le résultat et l'analyse d'images passées dans le générateur.<br>
     <b>--gen-path</b> : chemin vers les poids du modèle (doit être un <i>.h5</i>) <br>
